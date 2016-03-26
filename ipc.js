@@ -5,9 +5,9 @@
  **/
  
 module.exports = function(RED) {
+    "use strict";
 
 	var debugOption = false,
-        unixy = true,
         lineEnd = "\n",
         net = require("net"),
         fs = require("fs");
@@ -18,9 +18,7 @@ module.exports = function(RED) {
 	}
 // Detect platform type and adjust defaults accordingly
     if (require("os").platform() === "win32") {
-        unixy = false;
         lineEnd = "\r\n";
-        // TODO - insert code here if needed
     }
 
     function ipcInNode(config) {
@@ -39,7 +37,7 @@ module.exports = function(RED) {
         node.stringBuffer = "";
         node.parser = function (data) {
             if (debugOption) {
-                console.log("Connection");
+                node.log("IPC on " + node.path + " - received data");
             }
             var parts, i, msg;
             node.stringBuffer = node.stringBuffer + data.toString('utf8');
@@ -53,12 +51,14 @@ module.exports = function(RED) {
 
         node.server = net.createServer(function (connection) {
             if (debugOption) {
-                console.log('Connected');
+                node.log("IPC on " + node.path + " - client connected");
             }
             connection.on("data", node.parser);
             if (debugOption) {
                 connection.on("end", function () {
-                    console.log("Disconnected")
+                    if (debugOption) {
+                        node.log("IPC on " + node.path + " - client disconnected");
+                    }
                 });
             }
         });
@@ -66,27 +66,27 @@ module.exports = function(RED) {
             // If the path exists, set status and retry at intervals
             if (e.code == 'EADDRINUSE') {
                 if (debugOption) {
-                    console.log("Path in use, retrying...");
+                    node.log("IPC: path " + node.path + " in use, retrying...");
                 }
                 node.status({fill:"red", shape:"ring", text:"Path in use"});
                 setTimeout(function () {
-                    node.server.close();
-                    node.server.listen(node.path);
-                }, 2000);
+                        node.server.close();
+                        node.server.listen(node.path);
+                    }, 2000);
             }
         });
 
 		node.server.listen(node.path, function () {
+            if (debugOption){
+                node.log("IPC listening on " + node.path);
+            }
                 node.status({fill:"green", shape:"dot", text:"listening"})
             });
 
 		node.on("close", function () {
+            node.server.close();
             // Boot off anyone connected to the socket
             node.server.unref();
-			if (unixy) {
-                // Delete the socket: Windows pipes are unlinked auto-magically
-                fs.unlinkSync(node.path);
-            }
 		});
     }
 

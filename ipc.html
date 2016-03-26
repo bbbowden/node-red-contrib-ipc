@@ -8,11 +8,11 @@
 
 <script type="text/x-red" data-template-name="IPC-in">
 	<div class="form-row">
-        <label for="node-input-path"><i class="fa fa-cog"></i> Path</label>
+        <label for="node-input-path"><i class="fa fa-bolt"></i> Path</label>
         <input type="text" id="node-input-path" placeholder="">
     </div>
     <div class="form-row">
-        <label for="node-input-topic"><i class="fa fa-tag"></i> Topic</label>
+        <label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</label>
         <input type="text" id="node-input-topic" placeholder="Topic">
     </div>
     <div class="form-row">
@@ -25,6 +25,11 @@
 <script type="text/x-red" data-help-name="IPC-in">
    <p>Listens for communication from another process, using a UNIX-domain socket or (on Windows) a named pipe.
    A message is generated for each line of text received.</p>
+   <p>The node listens at the specified path:</p>
+   <ul>
+   <li>On Unix & Linux, this is a filesystem location which must be writeable, and must not exist when the flow is deployed</li>
+   <li>On Windows, this is a named pipe, in the form <b>\\.\pipe\<i>pipename</i></b>, which must not exist when the flow is deployed</li>
+   </ul>
 </script>
 
 <!-- Register node type  -->
